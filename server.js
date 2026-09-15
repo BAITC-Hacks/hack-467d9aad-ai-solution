@@ -6,7 +6,8 @@ const path = require('node:path');
 const {
   validateLecture,
   validateGenerated,
-  extractJsonText
+  extractJsonText,
+  buildLocalFallback
 } = require('./lib');
 
 const PORT = Number(process.env.PORT || 3000);
@@ -76,6 +77,10 @@ async function callOpenAI(lecture) {
   return extractJsonText(text);
 }
 
+function hasOpenAIConfig(env = process.env) {
+  return Boolean(env.OPENAI_API_KEY && env.OPENAI_MODEL);
+}
+
 async function handleGenerate(req, res) {
   let size = 0;
   const chunks = [];
@@ -88,8 +93,21 @@ async function handleGenerate(req, res) {
   try {
     const payload = JSON.parse(Buffer.concat(chunks).toString('utf8') || '{}');
     const lecture = validateLecture(payload.lecture);
-    const raw = await callOpenAI(lecture);
-    const result = validateGenerated(raw, lecture);
+    const openAIReady = hasOpenAIConfig();
+    let result;
+    let mode = 'local-fallback';
+    if (openAIReady) {
+      try {
+        const raw = await callOpenAI(lecture);
+        result = validateGenerated(raw, lecture);
+        mode = 'openai';
+      } catch {
+        result = validateGenerated(buildLocalFallback(lecture), lecture);
+      }
+    } else {
+      result = validateGenerated(buildLocalFallback(lecture), lecture);
+    }
+    result.meta.mode = mode;
     return json(res, 200, result);
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Неизвестная ошибка.';
@@ -135,4 +153,4 @@ if (require.main === module) {
   });
 }
 
-module.exports = { server, extractResponseText };
+module.exports = { server, extractResponseText, hasOpenAIConfig };

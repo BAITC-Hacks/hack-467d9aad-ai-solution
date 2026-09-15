@@ -90,6 +90,104 @@ function validateGenerated(raw, lecture) {
   };
 }
 
+
+function splitLectureSentences(lecture) {
+  const text = String(lecture);
+  const raw = [];
+  let start = 0;
+  for (let index = 0; index < text.length; index += 1) {
+    const char = text[index];
+    const next = text[index + 1];
+    const boundary = '.!?…'.includes(char) && (next === undefined || /\s/u.test(next));
+    if (!boundary) continue;
+    const part = text.slice(start, index + 1).trim();
+    if (part) raw.push(part);
+    start = index + 1;
+  }
+  const tail = text.slice(start).trim();
+  if (tail) raw.push(tail);
+
+  const sentences = [];
+  let buffer = '';
+  for (const part of raw) {
+    buffer = buffer ? `${buffer} ${part}` : part;
+    if (normalizeText(buffer).length >= 24) {
+      sentences.push(buffer);
+      buffer = '';
+    }
+  }
+  if (buffer) {
+    if (sentences.length) sentences[sentences.length - 1] += ` ${buffer}`;
+    else sentences.push(buffer);
+  }
+  const cleaned = sentences.filter(value => normalizeText(value).length >= 12);
+  if (cleaned.length) return cleaned;
+  const fallback = text.trim();
+  return fallback ? [fallback] : [];
+}
+
+function sourceQuote(sentence) {
+  const text = String(sentence).trim();
+  if (normalizeText(text).length <= 500) return text;
+
+  let low = 1;
+  let high = Math.min(text.length, 500);
+  let best = '';
+  while (low <= high) {
+    const middle = Math.floor((low + high) / 2);
+    const candidate = text.slice(0, middle).trimEnd();
+    if (normalizeText(candidate).length <= 500) {
+      best = candidate;
+      low = middle + 1;
+    } else {
+      high = middle - 1;
+    }
+  }
+  return best;
+}
+
+function buildLocalFallback(lecture) {
+  const text = validateLecture(lecture);
+  const sentences = splitLectureSentences(text);
+  if (!sentences.length) throw new Error('Не удалось выделить содержательные фрагменты лекции.');
+  const ranked = sentences
+    .map((sentence, index) => ({
+      sentence: sourceQuote(sentence),
+      index,
+      score: Math.min(sentence.length, 240) + (sentences.length - index)
+    }))
+    .sort((left, right) => right.score - left.score || left.index - right.index)
+    .map(item => item.sentence);
+  const pick = index => ranked[index % ranked.length];
+
+  const notes = Array.from({ length: 3 }, (_, index) => ({
+    title: `Ключевой блок ${index + 1}`,
+    text: pick(index)
+  }));
+  const key_points = Array.from({ length: 5 }, (_, index) => {
+    const source_quote = pick(index);
+    return { text: source_quote, source_quote };
+  });
+  const quiz = Array.from({ length: 5 }, (_, index) => {
+    const source_quote = pick(index + 1);
+    return {
+      question: `Что утверждается в ключевом фрагменте ${index + 1}?`,
+      answer: source_quote,
+      source_quote
+    };
+  });
+  const flashcards = Array.from({ length: 6 }, (_, index) => {
+    const source_quote = pick(index + 2);
+    return {
+      front: `Ключевой фрагмент ${index + 1}`,
+      back: source_quote,
+      source_quote
+    };
+  });
+
+  return { notes, key_points, quiz, flashcards };
+}
+
 function extractJsonText(text) {
   const cleaned = String(text ?? '').trim()
     .replace(/^```(?:json)?\s*/i, '')
@@ -104,5 +202,7 @@ module.exports = {
   validateLecture,
   quoteInLecture,
   validateGenerated,
-  extractJsonText
+  extractJsonText,
+  splitLectureSentences,
+  buildLocalFallback
 };

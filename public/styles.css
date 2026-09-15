@@ -39,7 +39,11 @@ textarea:focus { border-color: var(--accent); box-shadow: 0 0 0 4px rgba(47,107,
 .spinner { width: 28px; height: 28px; border-radius: 50%; border: 3px solid #dfe8e2; border-top-color: var(--accent); animation: spin .9s linear infinite; }
 @keyframes spin { to { transform: rotate(360deg); } }
 .results { margin-top: 44px; }
-.verified { margin: 18px 0; padding: 12px 14px; border-left: 3px solid var(--accent); background: var(--soft); border-radius: 10px; color: var(--accent-dark); font-weight: 650; }
+.result-meta { display: grid; gap: 10px; margin: 18px 0; }
+.mode-badge { width: fit-content; padding: 7px 11px; border-radius: 999px; font-size: 12px; font-weight: 800; letter-spacing: .02em; }
+.mode-ai { color: #174d37; background: #dff2e7; border: 1px solid #b8ddc7; }
+.mode-local { color: #66511d; background: #fbf0c9; border: 1px solid #e8d589; }
+.verified { padding: 12px 14px; border-left: 3px solid var(--accent); background: var(--soft); border-radius: 10px; color: var(--accent-dark); font-weight: 650; }
 .tabs { display: flex; gap: 8px; overflow-x: auto; padding: 8px 0 18px; }
 .tab { white-space: nowrap; background: rgba(255,255,255,.7); border: 1px solid var(--line); }
 .tab.active { color: white; background: var(--accent); border-color: var(--accent); }

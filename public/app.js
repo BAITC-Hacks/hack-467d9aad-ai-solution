@@ -9,6 +9,7 @@ const errorBox = document.querySelector('#error');
 const loading = document.querySelector('#loading');
 const results = document.querySelector('#results');
 const verified = document.querySelector('#verified');
+const modeBadge = document.querySelector('#modeBadge');
 
 const SAMPLE = `Искусственные нейронные сети — это вычислительные модели, состоящие из связанных между собой искусственных нейронов. Каждый нейрон получает входные значения, умножает их на веса, суммирует и применяет функцию активации. Веса определяют силу связей между нейронами.\n\nОбучение нейронной сети заключается в подборе весов так, чтобы уменьшить ошибку между предсказанием модели и правильным ответом. Один из распространённых методов обучения — обратное распространение ошибки. Оно вычисляет, как изменение каждого веса влияет на итоговую ошибку, после чего оптимизатор корректирует веса.\n\nДанные обычно разделяют на обучающую, валидационную и тестовую выборки. Обучающая выборка используется для изменения параметров модели. Валидационная помогает выбирать настройки и отслеживать переобучение. Тестовая выборка нужна для финальной оценки на данных, которые модель не использовала при обучении.\n\nПереобучение возникает, когда модель хорошо запоминает обучающие примеры, но хуже работает на новых данных. Для борьбы с переобучением применяют больше данных, регуляризацию, раннюю остановку и другие методы. Качество модели следует оценивать на данных, не участвовавших в настройке её параметров.`;
 
@@ -68,6 +69,12 @@ function render(data) {
     card.append(answer, evidence(item.source_quote)); cards.append(card);
   });
 
+  const isOpenAI = data.meta.mode === 'openai';
+  modeBadge.textContent = isOpenAI ? 'AI mode · OpenAI' : 'Offline fallback · без API';
+  modeBadge.className = `mode-badge ${isOpenAI ? 'mode-ai' : 'mode-local'}`;
+  modeBadge.title = isOpenAI
+    ? 'Материалы сгенерированы моделью OpenAI и проверены по цитатам.'
+    : 'Детерминированный локальный режим: материалы собраны из фрагментов лекции без LLM.';
   verified.textContent = `Проверено по лекции: ${data.meta.verifiedEvidenceCount} цитат-оснований` +
     (data.meta.removedUnsupportedEvidenceCount ? ` · отклонено неподтверждённых: ${data.meta.removedUnsupportedEvidenceCount}` : '');
   results.classList.remove('hidden');
