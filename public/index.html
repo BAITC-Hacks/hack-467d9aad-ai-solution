@@ -1,0 +1,56 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#f6f4ef">
+  <title>StudyForge — AI-конспектор лекций</title>
+  <link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+  <main class="shell">
+    <header class="hero">
+      <div class="badge">HackAlem · EdTech</div>
+      <h1>StudyForge</h1>
+      <p>Превращает лекцию в конспект, тезисы, проверочный тест и карточки — с цитатами из исходного текста.</p>
+    </header>
+
+    <section class="panel input-panel" aria-labelledby="input-title">
+      <div class="section-head">
+        <div><span class="eyebrow">01 · Лекция</span><h2 id="input-title">Вставьте текст</h2></div>
+        <button id="sampleBtn" class="ghost" type="button">Заполнить пример</button>
+      </div>
+      <textarea id="lecture" rows="13" maxlength="50000" placeholder="Вставьте расшифровку лекции…"></textarea>
+      <div class="input-footer">
+        <span id="counter">0 символов</span>
+        <button id="generateBtn" class="primary" type="button">Создать материалы</button>
+      </div>
+      <div id="error" class="error hidden" role="alert"></div>
+    </section>
+
+    <section id="loading" class="panel loading hidden" aria-live="polite">
+      <div class="spinner"></div>
+      <div><strong>Анализируем лекцию</strong><p>Ищем ключевые идеи и проверяем опору на исходный текст.</p></div>
+    </section>
+
+    <section id="results" class="results hidden" aria-live="polite">
+      <div class="results-head">
+        <div><span class="eyebrow">02 · Материалы</span><h2>Готово для повторения</h2></div>
+        <button id="againBtn" class="ghost" type="button">Другая лекция</button>
+      </div>
+      <div id="verified" class="verified"></div>
+      <nav class="tabs" aria-label="Разделы результата">
+        <button class="tab active" data-tab="notes">Конспект</button>
+        <button class="tab" data-tab="points">Тезисы</button>
+        <button class="tab" data-tab="quiz">Тест</button>
+        <button class="tab" data-tab="cards">Карточки</button>
+      </nav>
+      <div id="notes" class="tab-panel"></div>
+      <div id="points" class="tab-panel hidden"></div>
+      <div id="quiz" class="tab-panel hidden"></div>
+      <div id="cards" class="tab-panel hidden"></div>
+    </section>
+  </main>
+  <script src="/app.js" defer></script>
+</body>
+</html>
